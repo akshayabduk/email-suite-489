@@ -52,78 +52,48 @@ export const AuthAPI = {
  */
 export const MailAPI = {
   // PUBLIC_INTERFACE
-  list: async ({ mailbox = 'inbox', page = 1, pageSize = 20, query = '', filters = {} }) => {
-    /** Lists emails for a mailbox with pagination, query and lightweight filters. */
-    const params = { page, pageSize, q: query, ...filters };
-    const { data } = await api.get(`/api/v1/mail/${mailbox}`, { params });
-    return data; // {items:[], total: n}
+  list: async ({ mailbox = 'inbox', page = 0, size = 20, q = '', filters = {} }) => {
+    /** Lists emails for a mailbox with pagination & query using backend's conventions. */
+    const params = { page, size, q, ...filters };
+    const { data } = await api.get(`/api/v1/emails/${mailbox}`, { params });
+    return data;
   },
   // PUBLIC_INTERFACE
   get: async (id) => {
     /** Fetch a single email by id, including body/attachments. */
-    const { data } = await api.get(`/api/v1/mail/${id}`);
+    const { data } = await api.get(`/api/v1/emails/${id}`);
     return data;
   },
   // PUBLIC_INTERFACE
-  toggleRead: async (ids, read = true) => {
-    /** Mark one or multiple emails as read/unread. */
-    const { data } = await api.post(`/api/v1/mail/actions/read`, { ids, read });
+  updateFlags: async (id, { read, starred, archived, deleted }) => {
+    /** Update flags for a specific email */
+    const { data } = await api.patch(`/api/v1/emails/${id}/flags`, { read, starred, archived, deleted });
     return data;
   },
   // PUBLIC_INTERFACE
-  toggleStar: async (ids, starred = true) => {
-    /** Star / unstar emails. */
-    const { data } = await api.post(`/api/v1/mail/actions/star`, { ids, starred });
-    return data;
-  },
-  // PUBLIC_INTERFACE
-  archive: async (ids) => {
-    /** Archive emails. */
-    const { data } = await api.post(`/api/v1/mail/actions/archive`, { ids });
-    return data;
-  },
-  // PUBLIC_INTERFACE
-  delete: async (ids) => {
-    /** Move emails to trash. */
-    const { data } = await api.post(`/api/v1/mail/actions/delete`, { ids });
-    return data;
-  },
-  // PUBLIC_INTERFACE
-  restore: async (ids) => {
-    /** Restore emails from trash/archive to inbox. */
-    const { data } = await api.post(`/api/v1/mail/actions/restore`, { ids });
-    return data;
-  },
-  // PUBLIC_INTERFACE
-  moveToLabel: async (ids, labelId) => {
-    /** Apply/move emails to a label. */
-    const { data } = await api.post(`/api/v1/mail/actions/move`, { ids, labelId });
-    return data;
-  },
-  // PUBLIC_INTERFACE
-  compose: async ({ to, subject, body, attachments = [] }) => {
-    /** Send email: POST /api/v1/emails/compose with JSON. Attachments should already be uploaded and referenced by IDs if backend requires. */
-    const payload = { to, subject, body, attachments };
+  compose: async ({ to, cc = '', bcc = '', subject, bodyHtml = '', bodyText = '' }) => {
+    /** Send email with backend schema */
+    const payload = { to, cc, bcc, subject, bodyHtml, bodyText };
     const { data } = await api.post('/api/v1/emails/compose', payload);
     return data;
   },
   // PUBLIC_INTERFACE
-  saveDraft: async ({ to, subject, body, attachments = [], id } = {}) => {
-    /** Save draft: POST /api/v1/emails/draft with JSON. Returns draft info including id to attach files. */
-    const payload = { to, subject, body, attachments, id };
+  draft: async ({ to, cc = '', bcc = '', subject, bodyHtml = '', bodyText = '' }) => {
+    /** Save draft using backend draft endpoint */
+    const payload = { to, cc, bcc, subject, bodyHtml, bodyText };
     const { data } = await api.post('/api/v1/emails/draft', payload);
     return data;
   },
   // PUBLIC_INTERFACE
-  uploadAttachment: async (file, { draftId } = {}) => {
-    /** Upload attachment via multipart form-data. When draftId is provided, associates with the draft on backend. */
+  uploadAttachment: async (emailId, files) => {
+    /** Upload one or more files for a given email/draft id using backend endpoint */
     const form = new FormData();
-    form.append('file', file);
-    if (draftId) form.append('draftId', draftId);
-    const { data } = await api.post('/api/v1/attachments', form, {
+    form.append('emailId', emailId);
+    for (const f of files) form.append('files', f);
+    const { data } = await api.post('/api/v1/attachments/upload', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return data; // { id, filename, size, url? }
+    return data; // [{ id, emailId, filename, ... }]
   },
 };
 
