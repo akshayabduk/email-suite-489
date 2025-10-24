@@ -1,49 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import Header from './components/Header.jsx';
+import Sidebar from './components/Sidebar.jsx';
+import AppRoutes from './routes.jsx';
 
-// PUBLIC_INTERFACE
-function App() {
+/**
+ * PUBLIC_INTERFACE
+ * App root layout with theme toggler, header, sidebar and content area.
+ */
+export default function App() {
   const [theme, setTheme] = useState('light');
 
-  // Effect to apply theme to document element
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-shell">
+      <Header />
+      <div className="app-body">
+        <Sidebar />
+        <main className="content">
+          <div className="theme-toggle-wrap">
+            <button
+              className="theme-toggle"
+              onClick={() => setTheme(prev => (prev === 'light' ? 'dark' : 'light'))}
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+            </button>
+          </div>
+          <AppRoutes />
+        </main>
+      </div>
     </div>
   );
 }
-
-export default App;
