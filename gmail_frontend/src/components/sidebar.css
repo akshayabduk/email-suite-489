@@ -59,4 +59,20 @@
   margin: 4px 6px 0 0;
   border-radius:999px;
   font-size: 0.8rem;
+  text-decoration: none;
+}
+.label-chip.active{
+  background:#fde68a;
+  color:#78350f;
+  border-color:#fbbf24;
+}
+.labels-list{
+  display:flex;
+  flex-wrap: wrap;
+}
+.muted{
+  color: var(--muted);
+}
+.small{
+  font-size: 0.85rem;
 }

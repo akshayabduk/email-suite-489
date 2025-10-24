@@ -45,3 +45,68 @@ export const AuthAPI = {
     return data;
   }
 };
+
+/**
+ * PUBLIC_INTERFACE
+ * Mail API encapsulates mailbox listing, message details, actions and labels.
+ */
+export const MailAPI = {
+  // PUBLIC_INTERFACE
+  list: async ({ mailbox = 'inbox', page = 1, pageSize = 20, query = '', filters = {} }) => {
+    /** Lists emails for a mailbox with pagination, query and lightweight filters. */
+    const params = { page, pageSize, q: query, ...filters };
+    const { data } = await api.get(`/api/v1/mail/${mailbox}`, { params });
+    return data; // {items:[], total: n}
+  },
+  // PUBLIC_INTERFACE
+  get: async (id) => {
+    /** Fetch a single email by id, including body/attachments. */
+    const { data } = await api.get(`/api/v1/mail/${id}`);
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  toggleRead: async (ids, read = true) => {
+    /** Mark one or multiple emails as read/unread. */
+    const { data } = await api.post(`/api/v1/mail/actions/read`, { ids, read });
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  toggleStar: async (ids, starred = true) => {
+    /** Star / unstar emails. */
+    const { data } = await api.post(`/api/v1/mail/actions/star`, { ids, starred });
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  archive: async (ids) => {
+    /** Archive emails. */
+    const { data } = await api.post(`/api/v1/mail/actions/archive`, { ids });
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  delete: async (ids) => {
+    /** Move emails to trash. */
+    const { data } = await api.post(`/api/v1/mail/actions/delete`, { ids });
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  restore: async (ids) => {
+    /** Restore emails from trash/archive to inbox. */
+    const { data } = await api.post(`/api/v1/mail/actions/restore`, { ids });
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  moveToLabel: async (ids, labelId) => {
+    /** Apply/move emails to a label. */
+    const { data } = await api.post(`/api/v1/mail/actions/move`, { ids, labelId });
+    return data;
+  },
+};
+
+// PUBLIC_INTERFACE
+export const LabelsAPI = {
+  /** Fetch user labels. */
+  list: async () => {
+    const { data } = await api.get('/api/v1/labels');
+    return data; // [{id,name,color},...]
+  }
+};

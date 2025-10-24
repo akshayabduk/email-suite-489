@@ -19,6 +19,8 @@ export default function Header() {
         {token ? (
           <>
             <Link to="/" className="nav-link">Inbox</Link>
+            <Link to="/archived" className="nav-link">Archived</Link>
+            <Link to="/labels" className="nav-link">Labels</Link>
             <Link to="/compose" className="nav-link">Compose</Link>
             <Link to="/settings" className="nav-link">Settings</Link>
           </>
