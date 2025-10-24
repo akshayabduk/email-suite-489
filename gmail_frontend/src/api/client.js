@@ -4,13 +4,13 @@ import axios from 'axios';
  * Axios API client configured to talk to the backend.
  * - Base URL is read from REACT_APP_API_BASE (defaults to http://localhost:3001)
  * - Automatically attaches Authorization: Bearer <token> header if token exists
- * - Exposes helper methods for auth endpoints.
+ * - Exposes helper methods for auth endpoints and mail operations.
  */
 const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
 
 export const api = axios.create({
   baseURL: API_BASE,
-  withCredentials: true
+  withCredentials: true,
 });
 
 // Attach Authorization header if token exists
@@ -19,7 +19,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers = {
       ...config.headers,
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     };
   }
   return config;
@@ -99,6 +99,31 @@ export const MailAPI = {
     /** Apply/move emails to a label. */
     const { data } = await api.post(`/api/v1/mail/actions/move`, { ids, labelId });
     return data;
+  },
+  // PUBLIC_INTERFACE
+  compose: async ({ to, subject, body, attachments = [] }) => {
+    /** Send email: POST /api/v1/emails/compose with JSON. Attachments should already be uploaded and referenced by IDs if backend requires. */
+    const payload = { to, subject, body, attachments };
+    const { data } = await api.post('/api/v1/emails/compose', payload);
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  saveDraft: async ({ to, subject, body, attachments = [], id } = {}) => {
+    /** Save draft: POST /api/v1/emails/draft with JSON. Returns draft info including id to attach files. */
+    const payload = { to, subject, body, attachments, id };
+    const { data } = await api.post('/api/v1/emails/draft', payload);
+    return data;
+  },
+  // PUBLIC_INTERFACE
+  uploadAttachment: async (file, { draftId } = {}) => {
+    /** Upload attachment via multipart form-data. When draftId is provided, associates with the draft on backend. */
+    const form = new FormData();
+    form.append('file', file);
+    if (draftId) form.append('draftId', draftId);
+    const { data } = await api.post('/api/v1/attachments', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data; // { id, filename, size, url? }
   },
 };
 

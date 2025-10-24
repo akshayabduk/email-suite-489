@@ -63,6 +63,14 @@ export default function MailList({ mailbox = 'inbox', onSelectMail }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, resolvedMailbox, q, onlyUnread, onlyStarred]);
 
+  // Refresh list when compose modal signals updates
+  useEffect(() => {
+    const onRefresh = () => load();
+    window.addEventListener('mail:refresh', onRefresh);
+    return () => window.removeEventListener('mail:refresh', onRefresh);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedMailbox, page, q, onlyUnread, onlyStarred]);
+
   const toggleSelect = (id) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
