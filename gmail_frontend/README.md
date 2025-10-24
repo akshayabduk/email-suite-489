@@ -9,6 +9,12 @@ This project provides a minimal React template with a clean, modern UI and minim
 - **Fast**: Minimal dependencies for quick loading times
 - **Simple**: Easy to understand and modify
 
+## Environment
+
+Create a .env.development file to point the frontend to the local backend:
+
+REACT_APP_API_BASE=http://localhost:3001
+
 ## Getting Started
 
 In the project directory, you can run:
